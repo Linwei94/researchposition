@@ -1,170 +1,175 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 
 <head>
-  <meta charset="UTF-8" />
-  <link rel="icon" href="/favicon.ico" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Welcome to Vuetify 3</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, minimal-ui">
+  <link href='https://fonts.googleapis.com/css?family=Roboto:300,400,500,700|Material+Icons' rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.min.css" rel="stylesheet">
+  <style>
+    table.v-table tbody td,
+    table.v-table tbody th {
+      height: 19px;
+    }
+  </style>
 </head>
 
 <body>
-  <div id="app"></div>
-  <script type="module" src="/src/main.js"></script>
-  <template>
-    <v-data-table-server
-      v-model:items-per-page="itemsPerPage"
-      :headers="headers"
-      :items-length="totalItems"
-      :items="serverItems"
-      :loading="loading"
-      item-value="name"
-      @update:options="loadItems"
-    ></v-data-table-server>
-  </template>
+  <div id="app">
+    <v-app>
+      <v-content>
+        <v-container>
+          <template>
+            <v-data-table :headers="headers" :items="desserts" :pagination.sync="pagination" item-key="name" class="elevation-1">
+              <template slot="items" slot-scope="props">
+                <tr @click="rowClick(props.item.name)">
+                  <td>{{ props.item.name }}</td>
+                  <td class="text-xs-right">{{ props.item.calories }}</td>
+                  <td class="text-xs-right">{{ props.item.fat }}</td>
+                  <td class="text-xs-right">{{ props.item.carbs }}</td>
+                  <td class="text-xs-right">{{ props.item.protein }}</td>
+                  <td class="text-xs-right">{{ props.item.iron }}</td>
+                </tr>
+              </template>
+            </v-data-table>
+          </template>
+        </v-container>
+        <v-container>
+          <v-card>
+            <v-card-text>
+              <div>{{ selectedItem }}</div>
+            </v-card-text>
+          </v-card>
+        </v-container>
+      </v-content>
+    </v-app>
+  </div>
+  <script src="https://cdn.jsdelivr.net/npm/vue/dist/vue.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vuetify/dist/vuetify.js"></script>
   <script>
-    const desserts = [
-      {
-        name: 'Frozen Yogurt',
-        calories: 159,
-        fat: 6.0,
-        carbs: 24,
-        protein: 4.0,
-        iron: '1',
-      },
-      {
-        name: 'Jelly bean',
-        calories: 375,
-        fat: 0.0,
-        carbs: 94,
-        protein: 0.0,
-        iron: '0',
-      },
-      {
-        name: 'KitKat',
-        calories: 518,
-        fat: 26.0,
-        carbs: 65,
-        protein: 7,
-        iron: '6',
-      },
-      {
-        name: 'Eclair',
-        calories: 262,
-        fat: 16.0,
-        carbs: 23,
-        protein: 6.0,
-        iron: '7',
-      },
-      {
-        name: 'Gingerbread',
-        calories: 356,
-        fat: 16.0,
-        carbs: 49,
-        protein: 3.9,
-        iron: '16',
-      },
-      {
-        name: 'Ice cream sandwich',
-        calories: 237,
-        fat: 9.0,
-        carbs: 37,
-        protein: 4.3,
-        iron: '1',
-      },
-      {
-        name: 'Lollipop',
-        calories: 392,
-        fat: 0.2,
-        carbs: 98,
-        protein: 0,
-        iron: '2',
-      },
-      {
-        name: 'Cupcake',
-        calories: 305,
-        fat: 3.7,
-        carbs: 67,
-        protein: 4.3,
-        iron: '8',
-      },
-      {
-        name: 'Honeycomb',
-        calories: 408,
-        fat: 3.2,
-        carbs: 87,
-        protein: 6.5,
-        iron: '45',
-      },
-      {
-        name: 'Donut',
-        calories: 452,
-        fat: 25.0,
-        carbs: 51,
-        protein: 4.9,
-        iron: '22',
-      },
-    ]
-  
-    const FakeAPI = {
-      async fetch ({ page, itemsPerPage, sortBy }) {
-        return new Promise(resolve => {
-          setTimeout(() => {
-            const start = (page - 1) * itemsPerPage
-            const end = start + itemsPerPage
-            const items = desserts.slice()
-  
-            if (sortBy.length) {
-              const sortKey = sortBy[0].key
-              const sortOrder = sortBy[0].order
-              items.sort((a, b) => {
-                const aValue = a[sortKey]
-                const bValue = b[sortKey]
-                return sortOrder === 'desc' ? bValue - aValue : aValue - bValue
-              })
-            }
-  
-            const paginated = items.slice(start, end)
-  
-            resolve({ items: paginated, total: items.length })
-          }, 500)
-        })
-      },
-    }
-  
-    export default {
-      data: () => ({
-        itemsPerPage: 5,
-        headers: [
-          {
-            title: 'Dessert (100g serving)',
-            align: 'start',
-            sortable: false,
-            key: 'name',
-          },
-          { title: 'Calories', key: 'calories', align: 'end' },
-          { title: 'Fat (g)', key: 'fat', align: 'end' },
-          { title: 'Carbs (g)', key: 'carbs', align: 'end' },
-          { title: 'Protein (g)', key: 'protein', align: 'end' },
-          { title: 'Iron (%)', key: 'iron', align: 'end' },
-        ],
-        serverItems: [],
-        loading: true,
-        totalItems: 0,
-      }),
+    var vm = new Vue({
+      el: '#app',
       methods: {
-        loadItems ({ page, itemsPerPage, sortBy }) {
-          this.loading = true
-          FakeAPI.fetch({ page, itemsPerPage, sortBy }).then(({ items, total }) => {
-            this.serverItems = items
-            this.totalItems = total
-            this.loading = false
-          })
-        },
+        rowClick(name) {
+          this.selectedItem = name;
+        }
       },
-    }
+      data: function () {
+        return {
+          selectedItem: "Sample",
+          pagination: {
+            sortBy: 'name'
+          },
+          headers: [
+            {
+              text: 'Dessert (100g serving)',
+              align: 'left',
+              sortable: false,
+              value: 'name',
+              width: '20%'
+            },
+            { text: 'Calories', value: 'calories', width: '16%' },
+            { text: 'Fat (g)', value: 'fat', width: '16%' },
+            { text: 'Carbs (g)', value: 'carbs', width: '16%' },
+            { text: 'Protein (g)', value: 'protein', width: '16%' },
+            { text: 'Iron (%)', value: 'iron', width: '16%' }
+          ],
+          desserts: [
+            {
+              value: false,
+              name: 'Frozen Yogurt',
+              calories: 159,
+              fat: 6.0,
+              carbs: 24,
+              protein: 4.0,
+              iron: '1%'
+            },
+            {
+              value: false,
+              name: 'Ice cream sandwich',
+              calories: 237,
+              fat: 9.0,
+              carbs: 37,
+              protein: 4.3,
+              iron: '1%'
+            },
+            {
+              value: false,
+              name: 'Eclair',
+              calories: 262,
+              fat: 16.0,
+              carbs: 23,
+              protein: 6.0,
+              iron: '7%'
+            },
+            {
+              value: false,
+              name: 'Cupcake',
+              calories: 305,
+              fat: 3.7,
+              carbs: 67,
+              protein: 4.3,
+              iron: '8%'
+            },
+            {
+              value: false,
+              name: 'Gingerbread',
+              calories: 356,
+              fat: 16.0,
+              carbs: 49,
+              protein: 3.9,
+              iron: '16%'
+            },
+            {
+              value: false,
+              name: 'Jelly bean',
+              calories: 375,
+              fat: 0.0,
+              carbs: 94,
+              protein: 0.0,
+              iron: '0%'
+            },
+            {
+              value: false,
+              name: 'Lollipop',
+              calories: 392,
+              fat: 0.2,
+              carbs: 98,
+              protein: 0,
+              iron: '2%'
+            },
+            {
+              value: false,
+              name: 'Honeycomb',
+              calories: 408,
+              fat: 3.2,
+              carbs: 87,
+              protein: 6.5,
+              iron: '45%'
+            },
+            {
+              value: false,
+              name: 'Donut',
+              calories: 452,
+              fat: 25.0,
+              carbs: 51,
+              protein: 4.9,
+              iron: '22%'
+            },
+            {
+              value: false,
+              name: 'KitKat',
+              calories: 518,
+              fat: 26.0,
+              carbs: 65,
+              protein: 7,
+              iron: '6%'
+            }
+          ]
+        }
+      }
+    })
   </script>
-
 </body>
 
 </html>
